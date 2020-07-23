@@ -1,39 +1,5 @@
 #include "libraries.h"
-
-struct Tile
-{
-	Tile* in;
-	Tile* cw; //clockwise
-	bool full;
-	int id;
-	
-//	tile()
-//	{
-//		in = nullptr;
-//		cw = nullptr;
-//		full = false;
-//	}
-};
-
-
-class Arena
-{
-	public:
-		
-		Arena();
-		~Arena();
-		
-		void rotate();
-		void slide();
-		
-		void print();
-		
-	private:
-		Tile* rings[4];
-		
-	
-};
-
+#include "arena.h"
 
 Arena::Arena()
 {
@@ -93,21 +59,56 @@ Arena::~Arena()
 		{
 			delete currentTile;
 			currentTile = nextTile;
-			nextTile = nextTile->cw;
+			if (nextTile)
+				nextTile = nextTile->cw;
 		}
-		delete currentTile;
+		
 	}
 }
 
 
-void Arena::rotate()
-{
+void Arena::rotate(int ring, int amount)
+{		
+	Tile* currentTile = rings[ring];
+	bool enemyPos[12];
+	bool enemyNewPos[12];
+	for (int i = 0; i < 12; i++)
+	{
+		enemyPos[i] = currentTile->full; 
+		currentTile = currentTile->cw;
+	}
 	
+	int space;
+	for (int i = 0; i < 12; i++)
+	{
+		if (i - amount < 0)
+			space = 12-(amount-i);
+		else
+			space = i - amount;
+		enemyNewPos[i] = enemyPos[space%12];
+	}
+	
+	currentTile = rings[ring];
+	for (int i = 0; i < 12; i ++)
+	{
+		currentTile->full = enemyNewPos[i];
+		currentTile = currentTile->cw;
+	}
 }
 
 void Arena::slide()
 {
 	
+}
+
+void Arena::setRing(int ring,bool enemies[])
+{
+	Tile* tile = rings[ring];
+	for (int i = 0; i < 12; i++)
+	{
+		tile->full = enemies[i];
+		tile = tile->cw;
+	}
 }
 
 void Arena::print()
@@ -139,3 +140,29 @@ void Arena::print()
 		cout << endl;
 	}
 }
+
+void Arena::printContent()
+{
+	for (int ring = 0; ring < 4; ring++)
+	{
+		printContent(ring);
+	}
+}
+
+void Arena::printContent(int ring)
+{
+	
+		
+		Tile* currentTile = rings[ring];
+		cout << ring << ": ";
+		for (int tile = 0; tile < 12; tile++)
+		{
+			cout << currentTile->full << " ";
+			currentTile = currentTile->cw;
+		}
+		cout << endl;
+	
+	
+}
+
+
