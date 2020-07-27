@@ -2,16 +2,14 @@
 
 struct Tile
 {
-	Tile* in;
-	Tile* out;
+	Tile* foward;
 	Tile* cw; //clockwise
 	bool full;
 	int id;
 	
 	Tile()
 	{
-		in = nullptr;
-		out = nullptr;
+		foward = nullptr;
 		cw = nullptr;
 		full = false;
 	}
@@ -21,7 +19,7 @@ struct Tile
 class Arena
 {
 	public:
-		
+			
 		Arena();
 		~Arena();
 		
@@ -30,6 +28,7 @@ class Arena
 		
 		void setRing(int ring, bool enemies[]);
 		void setCol(int col, bool enemies[]);
+		
 		void print();
 		void printRings();
 		void printCol();
@@ -37,6 +36,12 @@ class Arena
 		Tile* getRing(int ring) {return rings[ring];}
 		
 	private:
+		/*
+		Headptr for each linked list
+		rings[0] inner most ring
+		rings[3] outer most ring
+		*/
+		
 		Tile* rings[4];
 		
 		

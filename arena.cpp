@@ -3,9 +3,12 @@
 
 Arena::Arena()
 {
+	
+	/*
+	Creates 4 circular linked lists
+	*/
 	for (int ring = 0; ring < 4; ring++)
-	{
-		
+	{		
 		rings[ring] = new Tile;
 		Tile* currentTile = rings[ring];
 		for (int tile = 0; tile < 11; tile++)
@@ -19,46 +22,52 @@ Arena::Arena()
 		currentTile->cw = rings[ring];
 	}
 	
-	for (int ring = 3; ring > 0; ring--)
+	
+	Tile* column[4];
+	Tile* columnAcross[4];
+	for(int i = 0; i < 4;i++)
 	{
-		
-		Tile* outerTile = rings[ring];
-		Tile* innerTile = rings[ring-1];
-		for (int tile = 0; tile < 12; tile++)
+		column[i] = rings[i];
+		columnAcross[i] = rings[i];
+		for (int k = 0; k < 6; k++)
 		{
-			outerTile->in = innerTile;
-			innerTile->out = outerTile;
-			outerTile = outerTile->cw;
-			innerTile = innerTile->cw;
+			columnAcross[i] = columnAcross[i]->cw;	
 		}
-	}
-	
-	Tile* innerTile = rings[0];
-	Tile* outerTile = rings[3];
-	for (int tile = 0; tile < 12; tile++)
+	}	
+		
+		/*
+	Creates outer and inner connection 
+	between each tile foward rings
+	Allows outer ring to wrap around
+	*/	
+	for (int col = 0; col < 6; col++)
 	{		
-		Tile* innerAcross = innerTile;
-		Tile* outerAcross = outerTile;
-		for (int i = 0; i < 6; i++)
+		for (int i = 3; i > 0;i--)
 		{
-			innerAcross = innerAcross->cw;
-			outerAcross = outerAcross->cw;
+			column[i]->foward = column[i-1];
 		}
 		
-		innerTile->in = innerAcross;
-		outerTile->out = outerAcross;
-		innerTile = innerTile->cw;
-		outerTile = outerTile->cw;
+		column[0]->foward = columnAcross[0];
 		
-	}
-	
+		for (int i = 0; i < 3;i++)
+		{
+			columnAcross[i]->foward = columnAcross[i+1];
+		}
+		
+		columnAcross[3]->foward = column[3];
+		
+		for (int i = 0; i < 4;i++)
+		{
+			column[i] = column[i]->cw;
+			columnAcross[i] = columnAcross[i]->cw;
+		}				
+	}	
 }
 
 Arena::~Arena()
 {
 	for (int ring = 0; ring < 4; ring++)
-	{
-		
+	{		
 		Tile* currentTile = rings[ring];
 		Tile* nextTile = currentTile->cw;
 		for (int tile = 0; tile < 12; tile++)
@@ -67,32 +76,44 @@ Arena::~Arena()
 			currentTile = nextTile;
 			if (nextTile)
 				nextTile = nextTile->cw;
-		}
-		
+		}		
 	}
 }
 
-
+/*
+Rings can rotate foward a clockwise fasion to move
+'opponents' to next position foward the ring
+*/
 void Arena::rotate(int ring, int amount)
 {		
+	if (ring < 0 || ring >=4)
+		return;
+
 	Tile* currentTile = rings[ring];
 	bool enemyPos[12];
 	bool enemyNewPos[12];
+	int newSpace;
+	
+	/*
+	Finds current position of enemies on selected ring
+	*/
 	for (int i = 0; i < 12; i++)
 	{
 		enemyPos[i] = currentTile->full; 
 		currentTile = currentTile->cw;
 	}
 	
-	int space;
+	
+	/*
+	Finds new position of enemies. Will wrap
+	enemy around board
+	*/
 	for (int i = 0; i < 12; i++)
 	{
-		if (i - amount < 0)
-			space = 12-(amount-i);
-		else
-			space = i - amount;
-		enemyNewPos[i] = enemyPos[space%12];
+		newSpace = (i+amount)%12;		
+		enemyNewPos[newSpace] = enemyPos[i];
 	}
+	
 	
 	currentTile = rings[ring];
 	for (int i = 0; i < 12; i ++)
@@ -102,62 +123,58 @@ void Arena::rotate(int ring, int amount)
 	}
 }
 
+/*
+Slides a column foward 
+*/
 void Arena::slide(int col, int amount)
 {
-	if (col < 0 || col >= 12)
+	if (col < 0 || col >= 6)
 		return;
 		
-	Tile* currentTile = rings[3];
-	for (int i = 0; i < col; i++)
-		currentTile = currentTile->cw;
-			
-	
 	bool enemies[8];
 	bool enemyNewPos[8];
-	Tile* temp = currentTile;
-	for (int i = 0; i < 4; i++)
+	int newSpace;
+	Tile* temp;
+			
+	/*
+	Gets to selected column on outer ring
+	*/
+	Tile* currentCol = rings[3];
+	for (int i = 0; i < col; i++)
+		currentCol = currentCol->cw;
+			
+	
+	/*
+	Moves foward through column, finding enemy spots
+	*/
+	temp = currentCol;
+	for (int i = 0; i < 8; i++)
 	{
 		enemies[i] = temp->full;
-		temp = temp->in;
+		temp = temp->foward;
 	}
 	
 	
-	for (int i = 4; i < 8; i++)
-	{
-		enemies[i] = temp->full;		
-		temp = temp->out;
-	}
-
+	for (int i = 0; i < 8; i++)
+	{		
+		newSpace = (i+amount)%8;		
+		enemyNewPos[newSpace] = enemies[i];
+	}	
 	
-	int space;
+	
 	for (int i = 0; i < 8; i++)
 	{
-		if (i + amount >= 8)
-			space = (i+amount)%8;
-		else
-			space = i + amount;
-		enemyNewPos[space] = enemies[i];
-	}
-	
-
-	
-	
-	currentTile = rings[3];
-	for (int i = 0; i < col; i++)
-		currentTile = currentTile->cw;
-	for (int i = 0; i < 8; i++)
-	{
-		currentTile->full = enemyNewPos[i];
-		if (i < 4)
-			currentTile = currentTile->in;
-		else
-			currentTile = currentTile->out;
+		currentCol->full = enemyNewPos[i];
+		currentCol = currentCol->foward;		
 	}
 	
 }
 
 void Arena::setRing(int ring,bool enemies[])
 {
+	if (ring < 0 || ring >= 4)
+		return;
+		
 	Tile* tile = rings[ring];
 	for (int i = 0; i < 12; i++)
 	{
@@ -168,6 +185,9 @@ void Arena::setRing(int ring,bool enemies[])
 
 void Arena::setCol(int col, bool enemies[])
 {
+	if (col < 0 || col >= 6)
+		return;
+		
 	Tile* tile = rings[3];
 	for (int i = 0; i < col;i++)
 		tile = tile->cw;
@@ -175,18 +195,14 @@ void Arena::setCol(int col, bool enemies[])
 	for (int i = 0; i < 8; i++)
 	{
 		tile->full = enemies[i];
-		if (i < 4)
-			tile = tile->in;
-		else
-			tile = tile->out;
+		tile = tile->foward;		
 	}
 }
 
 void Arena::print()
 {
 	for (int ring = 0; ring < 4; ring++)
-	{
-		
+	{		
 		Tile* currentTile = rings[ring];
 		cout << ring << ": ";
 		for (int tile = 0; tile < 12; tile++)
@@ -205,9 +221,8 @@ void Arena::print()
 		cout << ring << ": ";
 		for (int tile = 0; tile < 12; tile++)
 		{
-			cout << setw(2) << currentTile->out->id << "<-" 
-			<< setw(2) << currentTile->id << "->" 
-			<< setw(2) << currentTile->in->id<<"  ";
+			cout << setw(2) << currentTile->id << "->" 
+			<< setw(2) << currentTile->foward->id<<"  ";
 			currentTile = currentTile->cw;
 		}
 		cout << endl;
@@ -232,22 +247,18 @@ void Arena::printRings()
 
 void Arena::printCol()
 {			
+		Tile* currentCol = rings[3];
+		Tile* currentTile = currentCol;
 		for (int col = 0; col < 6; col++)
-		{
-			Tile* currentTile = rings[3];
-			
-			for (int i = 0; i < col;i++)
-				currentTile = currentTile->cw;
-			
+		{						
 			for (int tile = 0; tile < 8; tile++)
 			{
-					cout << currentTile->full << " ";
-					if (tile < 4)
-						currentTile = currentTile->in;
-					else
-						currentTile = currentTile->out;
+				cout << currentTile->full << " ";
+				currentTile = currentTile->foward;											
 			}
 			cout << endl;	
+			currentCol = currentCol->cw;
+			currentTile = currentCol;
 		}
 		
 

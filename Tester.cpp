@@ -7,10 +7,7 @@ class Tester: public Arena
 		
 		void rotateTest();
 		void slideTest();
-		bool compare(Tile* tile, bool *enemies);	
-		
-	
-	
+		bool compare(Tile* tile, bool *enemies);
 };
 
 
