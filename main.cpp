@@ -15,9 +15,11 @@ int main()
 	Tester tester;
 	test.print();
 	test.rotate(0,1);
-	test.printContent();
+	test.printCol();
+	
 	
 	cout << "\n\n\n";
 	tester.rotateTest();
+	tester.slideTest();
 	return 0;
 }
