@@ -1,4 +1,3 @@
-#include "libraries.h"
 #include "arena.h"
 
 Arena::Arena()
@@ -78,6 +77,158 @@ Arena::~Arena()
 				nextTile = nextTile->cw;
 		}		
 	}
+	
+}
+
+void Arena::solveArena(ofstream &fout)
+{
+	if(solveArenaHelper("", 3,fout) == true)
+		return;	
+	Helper2("", 3, fout);
+}
+
+bool Arena::Helper2(string moves, int moveCount,ofstream &fout)
+{
+	
+	if (isSolved() == true)
+	{
+		cout << "SOLUTION: " << moves << "\n";
+		
+		return true;
+	}	
+	
+	if (moveCount <= 0)
+	{		
+		fout << moves << endl;
+		return false;
+	}
+	
+	string moveSlide;
+	string move;	
+	for (int ring = 0; ring < 4; ring++)
+	{
+		for (int amount = 1; amount < 12; amount++)
+		{		
+		
+			if (isRingEmpty(ring) == false)
+			{					
+			rotate(ring, amount);
+			move = "R"+to_string(ring) + ":" + to_string(amount) + " ";
+			moves += move;
+			moveCount-=1;
+			if(Helper2(moves, moveCount,fout))
+				return true;
+			}
+			
+			for (int column = 0; column < 6; column++)
+			{
+				for (int amountCol = 1; amountCol < 8; amountCol++)
+				{				
+					if (moveCount >=1)
+					{	
+					
+						if (isColEmpty(column) == false)
+						{														
+							slide(column, amountCol);
+							moveSlide = "S"+to_string(column) + ":" + to_string(amountCol) + " ";
+							moves += moveSlide;
+							
+							
+							moveCount-=1;
+							if(Helper2(moves, moveCount,fout))
+								return true;
+					
+						
+						
+							moveCount += 1;
+							slide(column, 8-amountCol);
+							moves = moves.substr(0,moves.size()-moveSlide.size());
+						}
+					}
+					
+				}
+		
+				
+			}
+			if (isRingEmpty(ring) == false)
+				{
+				moveCount+=1;
+				rotate(ring, 12-amount);
+				moves = moves.substr(0,moves.size()-move.size());
+				}
+		}		
+	}	
+	return false;
+}
+
+bool Arena::solveArenaHelper(string moves, int moveCount,ofstream &fout)
+{
+	if (isSolved() == true)
+	{
+		cout << "SOLUTION: " << moves << "\n";
+		
+		return true;
+	}	
+	
+	if (moveCount <= 0)
+	{		
+		//fout << moves << endl;
+		return false;
+	}
+	
+	string moveSlide;
+	string move;
+	for (int column = 0; column < 6; column++)
+	{
+		for (int amountCol = 1; amountCol < 8; amountCol++)
+		{				
+			if (isColEmpty(column) == false)
+			{					
+				slide(column, amountCol);
+				moveSlide = "S"+to_string(column) + ":" + to_string(amountCol) + " ";
+				moves += moveSlide;
+				
+				
+				moveCount-=1;
+				if(solveArenaHelper(moves, moveCount,fout))
+					return true;
+		
+			//	printRings();
+				
+					
+				for (int ring = 0; ring < 4; ring++)
+				{
+					for (int amount = 1; amount < 12; amount++)
+					{
+					
+						if ( moveCount >=1)
+						{
+							rotate(ring, amount);
+							move = "R"+to_string(ring) + ":" + to_string(amount) + " ";
+							moves += move;
+							if(solveArenaHelper(moves, moveCount-1,fout))
+								return true;
+						
+							rotate(ring, 12-amount);
+							moves = moves.substr(0,moves.size()-move.size());
+						}
+					}		
+				}			
+			
+				moveCount += 1;
+				slide(column, 8-amountCol);
+				moves = moves.substr(0,moves.size()-moveSlide.size());
+			}
+			
+		}
+		
+	}		
+	
+	
+
+	
+	return false;
+	
 }
 
 /*
@@ -86,7 +237,7 @@ Rings can rotate foward a clockwise fasion to move
 */
 void Arena::rotate(int ring, int amount)
 {		
-	if (ring < 0 || ring >=4)
+	if (ring < 0 || ring >=4 || isRingEmpty(ring))
 		return;
 
 	Tile* currentTile = rings[ring];
@@ -128,7 +279,7 @@ Slides a column foward
 */
 void Arena::slide(int col, int amount)
 {
-	if (col < 0 || col >= 6)
+	if (col < 0 || col >= 6 || isColEmpty(col))
 		return;
 		
 	bool enemies[8];
@@ -168,6 +319,143 @@ void Arena::slide(int col, int amount)
 		currentCol = currentCol->foward;		
 	}
 	
+}
+
+
+/*
+Checks if a column has no enemies
+*/
+bool Arena::isColEmpty(int col)
+{
+	Tile* currentTile = rings[3];
+	
+	for (int i = 0; i < col; i++)
+	{
+		currentTile = currentTile->cw;
+	}
+	
+	for (int i = 0; i < 8; i++)
+	{
+		if (currentTile->full == true)
+			return false;
+		currentTile = currentTile->foward;
+	}	
+	return true;
+}
+
+/*
+Checks that ring has no enemies
+*/
+bool Arena::isRingEmpty(int ring)
+{
+	Tile* currentTile = rings[ring];
+	
+	for (int i = 0; i < 12; i++)
+	{
+		if (currentTile->full == true)
+			return false;
+		currentTile = currentTile->cw;
+	}	
+	return true;	
+}
+
+bool Arena::isSolved()
+{
+	bool squareCheck[12];
+	bool lineCheck[12];
+	
+	for (int i = 0; i < 12;i++)
+	{
+		lineCheck[i] = checkLine(i);
+	}
+	
+	for (int i = 0; i < 12;i++)
+	{
+		squareCheck[i] = checkSquare(i);
+		
+		if (i != 11 && lineCheck[i] == false
+					&& squareCheck[i] == true)
+		{
+			squareCheck[i+1] = true;
+			i++;
+		}
+	}
+	
+	for (int i = 0; i < 12;i++)
+	{
+		
+		if (squareCheck[i] == false && lineCheck[i] == false)
+			return false;
+	}
+	return true;
+	
+}
+
+/*
+Checks if a line is complete
+Line must either be completely full or completely empty
+*/
+bool Arena::checkLine(int col)
+{
+	Tile* column = rings[3];
+	if (col > 5)
+		column = rings[0];
+	
+	for (int i = 0; i < col; i++)
+	{
+		column = column->cw;
+	}
+	
+	bool goal = column->full;
+	
+	for (int i = 0; i < 4; i++)
+	{
+		if (column->full != goal)
+			return false;
+		column = column->foward;
+	}
+	
+	return true;
+	
+}
+
+/*
+Checks if a particular 2x2 square of tiles is 
+a complete block of enemies
+*/
+bool Arena::checkSquare(int col)
+{
+	Tile* column = rings[1];	
+	if (col > 5)
+		column = rings[0];
+	
+	for (int i = 0; i < col; i++)
+	{
+		column = column->cw;
+	}
+	
+	//Special Case
+	bool goal = true;
+	if (col == 5 || col == 11)
+	{
+		Tile* split = column->foward->cw;
+		if (column->full != goal ||
+			column->foward->full != goal ||
+			split->full != goal ||
+			split->foward->full != goal)
+			return false;
+		return true;
+	}
+	
+	for (int i = 0; i < 2; i++)
+	{
+		if (column->full != goal || 
+			column->foward->full != goal)
+			return false;
+		column = column->cw;
+	}
+	
+	return true;
 }
 
 void Arena::setRing(int ring,bool enemies[])
@@ -263,5 +551,4 @@ void Arena::printCol()
 		
 
 }
-
 

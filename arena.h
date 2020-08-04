@@ -1,4 +1,8 @@
+#ifndef ARENA_H
+#define ARENA_H
+
 #include "libraries.h"
+
 
 struct Tile
 {
@@ -23,8 +27,18 @@ class Arena
 		Arena();
 		~Arena();
 		
+		void solveArena(ofstream &);
+		bool solveArenaHelper(string moves, int moveCount,ofstream &);
+		bool Helper2(string moves, int moveCount,ofstream &fout);
+		
 		void rotate(int ring,int amount);
 		void slide(int col, int amount);
+		
+		bool isColEmpty(int col);
+		bool isRingEmpty(int ring);
+		bool isSolved();
+		bool checkLine(int col);
+		bool checkSquare(int col);
 		
 		void setRing(int ring, bool enemies[]);
 		void setCol(int col, bool enemies[]);
@@ -47,3 +61,5 @@ class Arena
 		
 	
 };
+
+#endif

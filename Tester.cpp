@@ -1,14 +1,6 @@
-#include "arena.cpp"
 
-class Tester: public Arena
-{
-	public:
-		Tester(): Arena(){}
-		
-		void rotateTest();
-		void slideTest();
-		bool compare(Tile* tile, bool *enemies);
-};
+
+#include "Tester.h"
 
 
 void printEnemies(bool enemies[])
@@ -97,7 +89,6 @@ bool Tester::compare(Tile* tile, bool enemies[])
 	
 	return true;
 }
-
 
 
 
