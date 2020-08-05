@@ -84,16 +84,16 @@ void Arena::solveArena(ofstream &fout)
 {
 	if(solveArenaHelper("", 3,fout) == true)
 		return;	
-	Helper2("", 3, fout);
+	solveArenaHelperRotate("", 3, fout);
 }
 
-bool Arena::Helper2(string moves, int moveCount,ofstream &fout)
+bool Arena::solveArenaHelperRotate(string moves, int moveCount,ofstream &fout)
 {
 	
 	if (isSolved() == true)
 	{
 		cout << "SOLUTION: " << moves << "\n";
-		
+		fout << moves;
 		return true;
 	}	
 	
@@ -116,7 +116,7 @@ bool Arena::Helper2(string moves, int moveCount,ofstream &fout)
 			move = "R"+to_string(ring) + ":" + to_string(amount) + " ";
 			moves += move;
 			moveCount-=1;
-			if(Helper2(moves, moveCount,fout))
+			if(solveArenaHelperRotate(moves, moveCount,fout))
 				return true;
 			}
 			
@@ -135,10 +135,9 @@ bool Arena::Helper2(string moves, int moveCount,ofstream &fout)
 							
 							
 							moveCount-=1;
-							if(Helper2(moves, moveCount,fout))
-								return true;
-					
-						
+							if(solveArenaHelperRotate(moves, moveCount,fout))
+								return true;					
+				
 						
 							moveCount += 1;
 							slide(column, 8-amountCol);
@@ -166,13 +165,13 @@ bool Arena::solveArenaHelper(string moves, int moveCount,ofstream &fout)
 	if (isSolved() == true)
 	{
 		cout << "SOLUTION: " << moves << "\n";
-		
+		fout << moves;
 		return true;
 	}	
 	
 	if (moveCount <= 0)
 	{		
-		//fout << moves << endl;
+		fout << moves << endl;
 		return false;
 	}
 	

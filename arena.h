@@ -29,7 +29,7 @@ class Arena
 		
 		void solveArena(ofstream &);
 		bool solveArenaHelper(string moves, int moveCount,ofstream &);
-		bool Helper2(string moves, int moveCount,ofstream &fout);
+		bool solveArenaHelperRotate(string moves, int moveCount,ofstream &fout);
 		
 		void rotate(int ring,int amount);
 		void slide(int col, int amount);

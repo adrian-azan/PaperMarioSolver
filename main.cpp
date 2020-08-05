@@ -20,10 +20,10 @@ int main()
 	ofstream fout;
 	
 	fout.open("moves.txt");
-	tester.rotateTest();
-	cout << "Rotate Test Passed\n";
-	tester.slideTest();
-	cout << "Slide Test Passed\n";
+	//tester.rotateTest();
+	//cout << "Rotate Test Passed\n";
+	//tester.slideTest();
+	//cout << "Slide Test Passed\n";
 	if(fin.readArena(myArena) == false)
 	{
 		exit(-1);
